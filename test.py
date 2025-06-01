@@ -74,13 +74,24 @@ def dectedAndDraw(img, path):
     out_img = draw_landmarks_on_image(img, detection_result)
     return out_img
 
-def face(img, path):
-  
+def face(path):
+    img = Image.open(path)
+
     # STEP 3: Load the input image.
     mp_image = mp.Image.create_from_file(path)
 
     # STEP 4: Detect face landmarks from the input image.
     detection_result = detector.detect(mp_image)
+    face_landmarks_list = detection_result.face_landmarks
 
-    out_img = draw_landmarks_on_image(img, detection_result)
-    return out_img
+    width = img.width
+    height = img.height
+    data = {}
+    data['point_array'] = []
+    for idx in range(len(face_landmarks_list)):
+      face_landmarks = face_landmarks_list[idx]
+      for i in range(len(face_landmarks)):
+        x = face_landmarks[i].x * width
+        y = face_landmarks[i].y * height
+        data['point_array'].append({'x':x, 'y':y})
+    return data

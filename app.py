@@ -7,6 +7,10 @@ from test import dectedAndDraw
 from test import face
 from flask import Flask, jsonify
 
+# 设置静态文件夹路径
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+STATIC_FOLDER = os.path.join(APP_ROOT, 'static')
+
 app = Flask(__name__)
 
 # 配置
@@ -39,14 +43,6 @@ def process_image(input_path, output_path):
         print(f"Error processing image: {e}")
         return False
     
-def face(input_path):
-    try:
-    
-        face_data = face(input_path)
-        return face_data
-    except Exception as e:
-        print(f"Error processing image: {e}")
-        return None
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -108,16 +104,16 @@ def upload_file_face():
         # 检查是否有文件部分
         if 'file' not in request.files:
             error = 'No file part'
-            data.ret = 'Failure'
-            data.msg = error
+            data['ret'] = 'Failure'
+            data['msg'] = error
         else:
             file = request.files['file']
             
             # 检查是否选择了文件
             if file.filename == '':
                 error = 'No selected file'
-                data.ret = 'Failure'
-                data.msg = error
+                data['ret'] = 'Failure'
+                data['msg'] = error
             elif file and allowed_file(file.filename):
                 # 生成唯一文件名
                 file_ext = file.filename.rsplit('.', 1)[1].lower()
@@ -131,18 +127,28 @@ def upload_file_face():
 
                 
                 if face_ret == None:
-                    data.ret = 'Failure'
-                    data.msg = 'No Face'
+                    data['ret'] = 'Failure'
+                    data['msg'] = 'No Face'
                 else:
-                    data.ret = 'Success'
-                    data.msg = ''
-                    data.face = face_ret
+                    data['ret'] = 'Success'
+                    data['msg'] = ''
+                    data['face'] = face_ret
             else:
                 error = 'File type not allowed'
-                data.ret = 'Failure'
-                data.msg = error
+                data['ret'] = 'Failure'
+                data['msg'] = error
+    try:
+        jsonstr = jsonify(data)
+        return jsonstr
+    except Exception as e:
+        return 'jsonify Error'
+
     
-    return jsonify(data)
+
+@app.route('/test_face')
+def index():
+    # 返回HTML文件
+    return send_from_directory(STATIC_FOLDER, 'test_face.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
