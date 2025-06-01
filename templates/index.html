@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片处理服务</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-form {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .error {
+            color: red;
+        }
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .image-box {
+            margin: 10px;
+            text-align: center;
+        }
+        .image-box img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .image-title {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>图片处理服务</h1>
+    <p>上传图片，服务器将处理并显示转换后的灰度图像</p>
+    
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    
+    <div class="upload-form">
+        <form method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept="image/*" required>
+            <br><br>
+            <button type="submit">上传并处理</button>
+        </form>
+    </div>
+    
+    {% if original_img or processed_img %}
+    <div class="image-container">
+        {% if original_img %}
+        <div class="image-box">
+            <img src="{{ url_for('uploaded_file', filename=original_img) }}" alt="Original Image">
+            <div class="image-title">原始图片</div>
+        </div>
+        {% endif %}
+        
+        {% if processed_img %}
+        <div class="image-box">
+            <img src="{{ url_for('processed_file', filename=processed_img) }}" alt="Processed Image">
+            <div class="image-title">处理后图片 (灰度)</div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <p>支持的文件格式: PNG, JPG, JPEG, GIF</p>
+    <p>最大文件大小: 16MB</p>
+</body>
+</html>
