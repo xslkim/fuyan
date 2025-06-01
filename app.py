@@ -4,6 +4,8 @@ from PIL import Image
 import os
 import uuid
 from test import dectedAndDraw
+from test import face
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 
@@ -25,18 +27,10 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def process_image(input_path, output_path):
-    """将图片转换为灰度图并调整大小为500px宽度"""
     try:
         img = Image.open(input_path)
                 
-        
-        # 调整大小（保持宽高比）
-        width = 320
-        # ratio = width / float(img.size[0])
-        # height = int(float(img.size[1]) * float(ratio))
-        height = 480
-        gray_img = img.resize((width, height), Image.Resampling.LANCZOS)
-        gray_img = dectedAndDraw(gray_img, input_path)
+        gray_img = dectedAndDraw(img, input_path)
 
         
         gray_img.save(output_path)
@@ -44,6 +38,15 @@ def process_image(input_path, output_path):
     except Exception as e:
         print(f"Error processing image: {e}")
         return False
+    
+def face(input_path):
+    try:
+    
+        face_data = face(input_path)
+        return face_data
+    except Exception as e:
+        print(f"Error processing image: {e}")
+        return None
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -94,6 +97,52 @@ def upload_file():
                          original_img=original_img,
                          processed_img=processed_img,
                          error=error)
+
+@app.route('/face', methods=['GET', 'POST'])
+def upload_file_face():
+    error = None
+    
+    if request.method == 'POST':
+        data = {}
+
+        # 检查是否有文件部分
+        if 'file' not in request.files:
+            error = 'No file part'
+            data.ret = 'Failure'
+            data.msg = error
+        else:
+            file = request.files['file']
+            
+            # 检查是否选择了文件
+            if file.filename == '':
+                error = 'No selected file'
+                data.ret = 'Failure'
+                data.msg = error
+            elif file and allowed_file(file.filename):
+                # 生成唯一文件名
+                file_ext = file.filename.rsplit('.', 1)[1].lower()
+                unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
+                upload_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                
+                # 保存原始文件
+                file.save(upload_path)
+                
+                face_ret = face(upload_path)
+
+                
+                if face_ret == None:
+                    data.ret = 'Failure'
+                    data.msg = 'No Face'
+                else:
+                    data.ret = 'Success'
+                    data.msg = ''
+                    data.face = face_ret
+            else:
+                error = 'File type not allowed'
+                data.ret = 'Failure'
+                data.msg = error
+    
+    return jsonify(data)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
