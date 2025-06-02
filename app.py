@@ -8,6 +8,7 @@ from test import face
 from test import GetServerIP
 from flask import Flask, jsonify
 from FaceArk import GetPicDesc
+import re
 
 
 # 设置静态文件夹路径

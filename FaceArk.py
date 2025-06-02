@@ -11,6 +11,72 @@ client = Ark(
     api_key='14fc0280-fc65-462d-ac2d-50178c0212e3'
 )
 
+def parse_facial_data(data_str):
+    print(f'原始字符串 {data_str}')
+    data_str = "30-35岁 椭圆形 薄 无 杏仁形 直鼻 无 短 弓形 5 5 0 5 5 0 7"
+
+    if('脸型' not in data_str and '嘴型' not in data_str):
+        result = {}
+        lines = data_str.split()
+        result['面部年龄'] = lines[0]
+        result['脸型'] = lines[1]
+        result['嘴型'] = lines[2]
+        result['眼袋'] = lines[3]
+        result['眼型'] = lines[4]
+        result['鼻型'] = lines[5]
+        result['法令纹'] = lines[6]
+        result['人中'] = lines[7]
+        result['眉形'] = lines[8]
+        result['直得分'] = lines[9]
+        result['曲得分'] = lines[10]
+        result['直曲总分'] = lines[11]
+        result['大量感得分'] = lines[12]
+        result['小量感得分'] = lines[13]
+        result['量感总分'] = lines[14]
+        result['面部立体度'] = lines[15]
+
+        return result
+
+    if('\n' in data_str):
+        lines = data_str.split('\n')
+    else:
+        lines = data_str.split()
+
+    
+    structured_data = {}
+    
+    for item in lines:
+        # 处理分隔符（中文或英文冒号）
+        if '：' in item:
+            key, value = item.split('：', 1)
+        elif ':' in item:
+            key, value = item.split(':', 1)
+        else:
+            continue  # 跳过不符合格式的项
+        
+        # 清理键和值
+        key = key.strip()
+        value = value.strip()
+        
+        # 移除值中的单位（岁、分等）
+        for unit in ['岁', '分']:
+            if value.endswith(unit):
+                value = value[:-len(unit)]
+        
+        # 尝试转换为数字
+        try:
+            value = int(value)
+        except ValueError:
+            try:
+                value = float(value)
+            except ValueError:
+                pass  # 保持为字符串
+        
+        structured_data[key] = value
+    
+    return structured_data
+
+
 def GetPicDesc(img_url):
     response = client.chat.completions.create(
         # 指定您创建的方舟推理接入点 ID，此处已帮您修改为您的推理接入点 ID
@@ -37,25 +103,7 @@ def GetPicDesc(img_url):
     result = {}
 
     try:
-        items = text.split()
-        for item in items:
-            # 处理特殊的分值情况（如"8分"）
-            if '分' in item and '：' not in item:
-                key, value = item.split('分')[0], item.split('分')[0]
-            else:
-                key, value = item.split('：')
-            
-            # 移除值中的可能存在的"分"字
-            if value.endswith('分'):
-                value = value[:-1]
-            
-            # 尝试将数字转换为整数
-            try:
-                value = int(value)
-            except ValueError:
-                pass
-            
-            result[key] = value
+        result = parse_facial_data(text)
     except:
         print(f'Error {text}')
 
