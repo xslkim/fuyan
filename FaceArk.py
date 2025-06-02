@@ -11,7 +11,7 @@ client = Ark(
     api_key='14fc0280-fc65-462d-ac2d-50178c0212e3'
 )
 
-def GetPicDesc():
+def GetPicDesc(img_url):
     response = client.chat.completions.create(
         # 指定您创建的方舟推理接入点 ID，此处已帮您修改为您的推理接入点 ID
         model="doubao-1.5-vision-pro-250328",
@@ -22,15 +22,37 @@ def GetPicDesc():
                     {
                         "type": "image_url",
                         "image_url": {
-                            "url": "http://47.95.20.1:5000/static/fuyan.jpg"
+                            "url": img_url
                         },
                     },
-                    {"type": "text", "text": "这是哪里？"},
+                    {"type": "text", "text": "告诉我图片中人物的以下特征，只要答案，面部年龄 脸型 嘴型 眼袋 眼型 鼻型 法令纹 人中 眉形 直得分 曲得分 直曲总分（直得分-曲得分） 大量感得分 小量感得分 量感总分（大量感得分-小量感得） 面部立体度（总分十分）"},
                 ],
             }
         ],
         
     )
 
-    print(response.choices[0])
-    return response.choices[0]
+    # text = '面部年龄:30-40岁\n脸型:圆脸\n嘴型:薄唇\n眼袋:无\n眼型:圆眼\n鼻型:直鼻\n法令纹:无\n人中:中等\n眉形:直眉\n直得分:7\n曲得分:3\n直曲总分:4\n大量感得分:5\n小量感得分:5\n量感总分:0\n面部立体度:6'
+    text = response.choices[0].message.content
+    result = {}
+
+    try:
+        lines = text.split('\n')
+        for line in lines:
+            key, value = line.split(':')
+            key = key.strip()
+            value = value.strip()
+            
+            # 尝试转换为整数（如果是得分类的字段）
+            if key.endswith('得分') or key.endswith('总分') or key == '面部立体度':
+                try:
+                    value = int(value)
+                except ValueError:
+                    pass
+            
+            result[key] = value
+    except:
+        print(f'Error {text}')
+
+    return result
+    

@@ -5,8 +5,10 @@ import os
 import uuid
 from test import dectedAndDraw
 from test import face
+from test import GetServerIP
 from flask import Flask, jsonify
 from FaceArk import GetPicDesc
+
 
 # 设置静态文件夹路径
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -119,24 +121,28 @@ def upload_file_face():
                 # 生成唯一文件名
                 file_ext = file.filename.rsplit('.', 1)[1].lower()
                 unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
-                upload_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                # upload_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 
+                save_path = os.path.join('/var/www/html/imgs', unique_filename)
                 # 保存原始文件
-                file.save(upload_path)
+                file.save(save_path)
+                file.close()
                 
-                face_ret = face(upload_path)
+                
+                feature_point = face(save_path)
 
-                faceDesc = GetPicDesc()
+                url = f'http://{GetServerIP()}/imgs/{unique_filename}'
+                face_figure = GetPicDesc(url)
 
                 
-                if face_ret == None:
+                if feature_point == None:
                     data['ret'] = 'Failure'
                     data['msg'] = 'No Face'
                 else:
                     data['ret'] = 'Success'
                     data['msg'] = ''
-                    data['face'] = face_ret
-                    data['desc'] = faceDesc
+                    data['feature_point'] = feature_point
+                    data['face_figure'] = face_figure
             else:
                 error = 'File type not allowed'
                 data['ret'] = 'Failure'

@@ -7,6 +7,9 @@ from mediapipe.framework.formats import landmark_pb2
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
 
+def GetServerIP():
+   return '47.95.20.1' 
+
 # STEP 2: Create an FaceLandmarker object.
 base_options = python.BaseOptions(model_asset_path='face_landmarker_v2_with_blendshapes.task')
 options = vision.FaceLandmarkerOptions(base_options=base_options,
