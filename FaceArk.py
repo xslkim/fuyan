@@ -37,18 +37,23 @@ def GetPicDesc(img_url):
     result = {}
 
     try:
-        lines = text.split('\n')
-        for line in lines:
-            key, value = line.split(':')
-            key = key.strip()
-            value = value.strip()
+        items = text.split()
+        for item in items:
+            # 处理特殊的分值情况（如"8分"）
+            if '分' in item and '：' not in item:
+                key, value = item.split('分')[0], item.split('分')[0]
+            else:
+                key, value = item.split('：')
             
-            # 尝试转换为整数（如果是得分类的字段）
-            if key.endswith('得分') or key.endswith('总分') or key == '面部立体度':
-                try:
-                    value = int(value)
-                except ValueError:
-                    pass
+            # 移除值中的可能存在的"分"字
+            if value.endswith('分'):
+                value = value[:-1]
+            
+            # 尝试将数字转换为整数
+            try:
+                value = int(value)
+            except ValueError:
+                pass
             
             result[key] = value
     except:

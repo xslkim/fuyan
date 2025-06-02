@@ -95,6 +95,6 @@ def face(path):
     for i in range(len(face_landmarks)):
       x = face_landmarks[i].x * width
       y = face_landmarks[i].y * height
-      data['point_array'].append({'id':i, 'x':x, 'y':y})
+      data['point_array'].append({'id':i, 'x':round(x, 2), 'y':round(y, 2)})
       
     return data
