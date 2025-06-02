@@ -88,10 +88,10 @@ def face(path):
     height = img.height
     data = {}
     data['point_array'] = []
-    for idx in range(len(face_landmarks_list)):
-      face_landmarks = face_landmarks_list[idx]
-      for i in range(len(face_landmarks)):
-        x = face_landmarks[i].x * width
-        y = face_landmarks[i].y * height
-        data['point_array'].append({'x':x, 'y':y})
+    face_landmarks = face_landmarks_list[0]
+    for i in range(len(face_landmarks)):
+      x = face_landmarks[i].x * width
+      y = face_landmarks[i].y * height
+      data['point_array'].append({'id':i, 'x':x, 'y':y})
+      
     return data
