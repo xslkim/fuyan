@@ -6,6 +6,7 @@ import uuid
 from test import dectedAndDraw
 from test import face
 from flask import Flask, jsonify
+from FaceArk import GetPicDesc
 
 # 设置静态文件夹路径
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -125,6 +126,8 @@ def upload_file_face():
                 
                 face_ret = face(upload_path)
 
+                faceDesc = GetPicDesc()
+
                 
                 if face_ret == None:
                     data['ret'] = 'Failure'
@@ -133,6 +136,7 @@ def upload_file_face():
                     data['ret'] = 'Success'
                     data['msg'] = ''
                     data['face'] = face_ret
+                    data['desc'] = faceDesc
             else:
                 error = 'File type not allowed'
                 data['ret'] = 'Failure'
