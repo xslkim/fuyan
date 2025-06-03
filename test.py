@@ -36,9 +36,6 @@ def draw_landmarks_on_image(rgb_image, path):
 
 
 
-
-out_img = draw_landmarks_on_image(img, detection_result)
-
 def find_x_coordinate(x1, y1, slope, y_target):
     if y1 == y_target:
         return x1
@@ -48,25 +45,17 @@ def find_x_coordinate(x1, y1, slope, y_target):
 def drawVerticalLine(draw, x, height):
    draw.line((x, 20, x, height-20),fill='green', width=2)
 
-def draw_line_on_image(rgb_image, detection_result, pd):
-  width = rgb_image.width
-  height = rgb_image.height
-  point_data = GetFacePoint(detection_result, width, height)
-  draw = ImageDraw.Draw(rgb_image)
-  p0 = point_data[34]
-  p1 = point_data[33]
-  p2 = point_data[133]
-  p3 = point_data[362]
-  p4 = point_data[263]
-  p5 = point_data[356]
-  drawVerticalLine(draw, p0['x'], height)
-  drawVerticalLine(draw, p1['x'], height)
-  drawVerticalLine(draw, p2['x'], height)
-  drawVerticalLine(draw, p3['x'], height)
-  drawVerticalLine(draw, p4['x'], height)
-  drawVerticalLine(draw, p5['x'], height)
+def draw_line_on_image(img, final_data):
+  width = img.width
+  height = img.height
+  draw = ImageDraw.Draw(img)
 
-  return rgb_image
+  page1 = final_data['page1']
+  line_x_array = page1['line_x_array']
+  for x in line_x_array:
+    drawVerticalLine(draw, x, height)
+
+  return img
 
 
 def face(path):

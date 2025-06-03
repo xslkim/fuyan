@@ -6,6 +6,7 @@ import uuid
 from test import draw_landmarks_on_image
 from test import face
 from test import GetServerIP
+from test import draw_line_on_image
 from flask import Flask, jsonify
 from FaceArk import GetPicDesc
 from FaceArk import GetFinalData
@@ -105,6 +106,7 @@ def upload_file_line():
                 file_ext = file.filename.rsplit('.', 1)[1].lower()
                 unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
                 save_path = os.path.join('/var/www/html/imgs', unique_filename)
+                original_img = unique_filename
                 # 保存原始文件
                 file.save(save_path)
                 file.close()
@@ -112,21 +114,23 @@ def upload_file_line():
                 # 处理图片
                 processed_filename = f"processed_{unique_filename}"
                 processed_path = os.path.join(app.config['PROCESSED_FOLDER'], processed_filename)
+                
 
                 url = f'http://{GetServerIP()}/imgs/{unique_filename}'
                 fire_ret = GetPicDesc(url)
-                original_img = Image.open(save_path)
+                img = Image.open(save_path)
 
                 final_data = GetFinalData(fire_ret, save_path, original_img.width, original_img.height)
-                processed_img = dectedAndDrawLine(processed_img, final_data)
-                processed_img.save(processed_path)
+                out_img = draw_line_on_image(img, final_data)
+                out_img.save(processed_path)
+                processed_img = processed_filename
 
             else:
                 error = 'File type not allowed'
     
     return render_template('index.html', 
-                         original_img=unique_filename,
-                         processed_img=processed_filename,
+                         original_img=original_img,
+                         processed_img=processed_img,
                          error=error)
 
 @app.route('/face', methods=['GET', 'POST'])
