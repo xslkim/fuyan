@@ -3,13 +3,12 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 import os
 import uuid
-from test import dectedAndDraw
-from test import dectedAndDrawLine
+from test import draw_landmarks_on_image
 from test import face
 from test import GetServerIP
 from flask import Flask, jsonify
 from FaceArk import GetPicDesc
-import re
+from FaceArk import GetFinalData
 
 
 # 设置静态文件夹路径
@@ -35,22 +34,6 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def process_image(input_path, output_path, drawType):
-    try:
-        img = Image.open(input_path)
-                
-        if(drawType == 'point'):
-            gray_img = dectedAndDraw(img, input_path)
-        elif(drawType == 'line'):
-            gray_img = dectedAndDrawLine(img, input_path)
-
-        
-        gray_img.save(output_path)
-        return True
-    except Exception as e:
-        print(f"Error processing image: {e}")
-        return False
-    
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -90,10 +73,9 @@ def upload_file():
                 processed_filename = f"processed_{unique_filename}"
                 processed_path = os.path.join(app.config['PROCESSED_FOLDER'], processed_filename)
                 
-                if process_image(upload_path, processed_path, 'point'):
-                    processed_img = processed_filename
-                else:
-                    error = 'Error processing image'
+                img = Image.open(upload_path)
+                gray_img = draw_landmarks_on_image(img, upload_path)
+                gray_img.save(processed_path)
             else:
                 error = 'File type not allowed'
     
@@ -122,35 +104,35 @@ def upload_file_line():
                 # 生成唯一文件名
                 file_ext = file.filename.rsplit('.', 1)[1].lower()
                 unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
-                upload_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                
+                save_path = os.path.join('/var/www/html/imgs', unique_filename)
                 # 保存原始文件
-                file.save(upload_path)
-                original_img = unique_filename
-                
+                file.save(save_path)
+                file.close()
+
                 # 处理图片
                 processed_filename = f"processed_{unique_filename}"
                 processed_path = os.path.join(app.config['PROCESSED_FOLDER'], processed_filename)
-                
-                if process_image(upload_path, processed_path, 'line'):
-                    processed_img = processed_filename
-                else:
-                    error = 'Error processing image'
+
+                url = f'http://{GetServerIP()}/imgs/{unique_filename}'
+                fire_ret = GetPicDesc(url)
+                original_img = Image.open(save_path)
+
+                final_data = GetFinalData(fire_ret, save_path, original_img.width, original_img.height)
+                processed_img = dectedAndDrawLine(processed_img, final_data)
+                processed_img.save(processed_path)
+
             else:
                 error = 'File type not allowed'
     
     return render_template('index.html', 
-                         original_img=original_img,
-                         processed_img=processed_img,
+                         original_img=unique_filename,
+                         processed_img=processed_filename,
                          error=error)
 
 @app.route('/face', methods=['GET', 'POST'])
 def upload_file_face():
-    error = None
-    
     if request.method == 'POST':
         data = {}
-
         # 检查是否有文件部分
         if 'file' not in request.files:
             error = 'No file part'
@@ -168,28 +150,23 @@ def upload_file_face():
                 # 生成唯一文件名
                 file_ext = file.filename.rsplit('.', 1)[1].lower()
                 unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
-                # upload_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                
+ 
                 save_path = os.path.join('/var/www/html/imgs', unique_filename)
                 # 保存原始文件
                 file.save(save_path)
                 file.close()
-                
-                
+
                 feature_point = face(save_path)
 
                 url = f'http://{GetServerIP()}/imgs/{unique_filename}'
                 face_figure = GetPicDesc(url)
 
                 
-                if feature_point == None:
-                    data['ret'] = 'Failure'
-                    data['msg'] = 'No Face'
-                else:
-                    data['ret'] = 'Success'
-                    data['msg'] = ''
-                    data['feature_point'] = feature_point
-                    data['face_figure'] = face_figure
+                data['ret'] = 'Success'
+                data['msg'] = ''
+                data['feature_point'] = feature_point
+                data['face_figure'] = face_figure
+                    
             else:
                 error = 'File type not allowed'
                 data['ret'] = 'Failure'

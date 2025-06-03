@@ -6,31 +6,21 @@ from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
+from FaceArk import GetFinalData
+from FaceArk import GetFacePoint
+from FaceArk import GetDetector
 
 def GetServerIP():
    return '47.95.20.1' 
 
 # STEP 2: Create an FaceLandmarker object.
-base_options = python.BaseOptions(model_asset_path='face_landmarker_v2_with_blendshapes.task')
-options = vision.FaceLandmarkerOptions(base_options=base_options,
-                                       output_face_blendshapes=True,
-                                       output_facial_transformation_matrixes=True,
-                                       num_faces=1)
-detector = vision.FaceLandmarker.create_from_options(options)
-
-def GetFacePoint(detection_result, width, height):
-    data = []
-    face_landmarks_list = detection_result.face_landmarks
-    face_landmarks = face_landmarks_list[0]
-    for i in range(len(face_landmarks)):
-      x = face_landmarks[i].x * width
-      y = face_landmarks[i].y * height
-      data.append({'id':i, 'x':round(x, 2), 'y':round(y, 2)})
-    
-    return data
 
 
-def draw_landmarks_on_image(rgb_image, detection_result):
+
+
+
+def draw_landmarks_on_image(rgb_image, path):
+  detection_result = GetDetector(path)
   point_data = GetFacePoint(detection_result, rgb_image.width, rgb_image.height)
 
   draw = ImageDraw.Draw(rgb_image)
@@ -47,15 +37,7 @@ def draw_landmarks_on_image(rgb_image, detection_result):
 
 
 
-def dectedAndDraw(img, path):
-    # STEP 3: Load the input image.
-    mp_image = mp.Image.create_from_file(path)
-
-    # STEP 4: Detect face landmarks from the input image.
-    detection_result = detector.detect(mp_image)
-
-    out_img = draw_landmarks_on_image(img, detection_result)
-    return out_img
+out_img = draw_landmarks_on_image(img, detection_result)
 
 def find_x_coordinate(x1, y1, slope, y_target):
     if y1 == y_target:
@@ -66,7 +48,7 @@ def find_x_coordinate(x1, y1, slope, y_target):
 def drawVerticalLine(draw, x, height):
    draw.line((x, 20, x, height-20),fill='green', width=2)
 
-def draw_line_on_image(rgb_image, detection_result):
+def draw_line_on_image(rgb_image, detection_result, pd):
   width = rgb_image.width
   height = rgb_image.height
   point_data = GetFacePoint(detection_result, width, height)
@@ -83,41 +65,13 @@ def draw_line_on_image(rgb_image, detection_result):
   drawVerticalLine(draw, p3['x'], height)
   drawVerticalLine(draw, p4['x'], height)
   drawVerticalLine(draw, p5['x'], height)
+
   return rgb_image
 
 
-
-
-  # meixin = point_data[9]
-  # xiaba = point_data[200]
-  # if(meixin.x == xiaba.x):
-  #    print(a)
-  # else:
-  #    slope = (xiaba.y - meixin.y) / (xiaba.x - meixin.y)
-
-  
-
-def dectedAndDrawLine(img, path):
-  
-    # STEP 3: Load the input image.
-    mp_image = mp.Image.create_from_file(path)
-
-    # STEP 4: Detect face landmarks from the input image.
-    detection_result = detector.detect(mp_image)
-
-    out_img = draw_line_on_image(img, detection_result)
-    return out_img
-
 def face(path):
     img = Image.open(path)
-
-    # STEP 3: Load the input image.
-    mp_image = mp.Image.create_from_file(path)
-
-    # STEP 4: Detect face landmarks from the input image.
-    detection_result = detector.detect(mp_image)
+    detection_result = GetDetector(path)
     data = {}
     data['point_array'] = GetFacePoint(detection_result, img.width, img.height)
-    
-      
     return data
