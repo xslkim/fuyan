@@ -4,6 +4,7 @@ from PIL import Image
 import os
 import uuid
 from test import dectedAndDraw
+from test import dectedAndDrawLine
 from test import face
 from test import GetServerIP
 from flask import Flask, jsonify
@@ -34,11 +35,14 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def process_image(input_path, output_path):
+def process_image(input_path, output_path, drawType):
     try:
         img = Image.open(input_path)
                 
-        gray_img = dectedAndDraw(img, input_path)
+        if(drawType == 'point'):
+            gray_img = dectedAndDraw(img, input_path)
+        elif(drawType == 'line'):
+            gray_img = dectedAndDrawLine(img, input_path)
 
         
         gray_img.save(output_path)
@@ -86,7 +90,49 @@ def upload_file():
                 processed_filename = f"processed_{unique_filename}"
                 processed_path = os.path.join(app.config['PROCESSED_FOLDER'], processed_filename)
                 
-                if process_image(upload_path, processed_path):
+                if process_image(upload_path, processed_path, 'point'):
+                    processed_img = processed_filename
+                else:
+                    error = 'Error processing image'
+            else:
+                error = 'File type not allowed'
+    
+    return render_template('index.html', 
+                         original_img=original_img,
+                         processed_img=processed_img,
+                         error=error)
+
+@app.route('/test_line', methods=['GET', 'POST'])
+def upload_file_line():
+    original_img = None
+    processed_img = None
+    error = None
+    
+    if request.method == 'POST':
+        # 检查是否有文件部分
+        if 'file' not in request.files:
+            error = 'No file part'
+        else:
+            file = request.files['file']
+            
+            # 检查是否选择了文件
+            if file.filename == '':
+                error = 'No selected file'
+            elif file and allowed_file(file.filename):
+                # 生成唯一文件名
+                file_ext = file.filename.rsplit('.', 1)[1].lower()
+                unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
+                upload_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                
+                # 保存原始文件
+                file.save(upload_path)
+                original_img = unique_filename
+                
+                # 处理图片
+                processed_filename = f"processed_{unique_filename}"
+                processed_path = os.path.join(app.config['PROCESSED_FOLDER'], processed_filename)
+                
+                if process_image(upload_path, processed_path, 'line'):
                     processed_img = processed_filename
                 else:
                     error = 'Error processing image'
