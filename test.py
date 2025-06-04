@@ -43,7 +43,7 @@ def find_x_coordinate(x1, y1, slope, y_target):
     return (x, y_target)
 
 def drawVerticalLine(draw, x, height):
-   draw.line((x, 20, x, height-20),fill='green', width=2)
+   draw.line((x, 20, x, height-20),fill='green', width=1)
 
 def draw_line_on_image(img, final_data):
   width = img.width
@@ -54,6 +54,18 @@ def draw_line_on_image(img, final_data):
   line_x_array = page1['line_x_array']
   for x in line_x_array:
     drawVerticalLine(draw, x, height)
+
+  page2 = final_data['page2']
+  r = page2['right_eye']
+  draw.line((r['right']['x'], r['top']['y'], r['left']['x'], r['top']['y']),fill='red', width=1)
+
+  page3 = final_data['page3']
+  l = page3['left_eye']
+  z = page3['ren_zhong']
+  r = page3['right_eye']
+  draw.line((l['x'], l['y'], z['x'], z['y']),fill='blue', width=1)
+  draw.line((r['x'], r['y'], z['x'], z['y']),fill='blue', width=1)
+  draw.line((l['x'], l['y'], r['x'], r['y']),fill='blue', width=1)
 
   return img
 

@@ -94,6 +94,30 @@ def angle(x1, y1, x2, y2):
     angle_deg = math.degrees(angle_rad)
     return angle_deg
 
+def calculate_angle(A, B, C):
+    """
+    使用atan2方法计算角度
+    """
+    # 创建向量BA和BC
+    BA = (A[0] - B[0], A[1] - B[1])
+    BC = (C[0] - B[0], C[1] - B[1])
+    
+    # 计算两个向量的角度
+    angle_BA = math.atan2(BA[1], BA[0])
+    angle_BC = math.atan2(BC[1], BC[0])
+    
+    # 计算角度差
+    angle = math.degrees(angle_BC - angle_BA)
+    
+    # 规范化角度到0-360度
+    angle = angle % 360
+    
+    # 取较小的角度（如果大于180度，取360-angle）
+    if angle > 180:
+        angle = 360 - angle
+    
+    return angle
+
 def GetDetector(path):
     mp_image = mp.Image.create_from_file(path)
     mp_ret = detector.detect(mp_image)
@@ -102,7 +126,12 @@ def GetDetector(path):
 def GetFinalData(fire_ret, save_path, width, height):
     mp_ret = GetDetector(save_path)
     if fire_ret['瞳距'] != None:
-        pd = int(fire_ret['瞳距'])
+        fire_ret['瞳距'] = fire_ret['瞳距'].replace('毫米', '')
+        try:
+            pd = int(fire_ret['瞳距'])
+        except:
+            pd = 62
+        fire_ret['瞳距'] = pd
     else:
         pd = 62
         fire_ret['瞳距'] = pd
@@ -155,8 +184,20 @@ def GetFinalData(fire_ret, save_path, width, height):
     left_eyebrow['angle'] = angle(p[285]['x'], p[285]['x'], p[282]['x'], p[282]['x'])
     left_eyebrow['distance'] = distance(p[295]['x'], p[295]['y'], p[385]['y'], p[385]['y'])
     page2['left_eyebrow'] = left_eyebrow
-
     final_data['page2'] = page2
+
+    page3 = {}
+    left_eye = p[473]
+    right_eye = p[468]
+    ren_zhong = p[164]
+    angel = calculate_angle((left_eye['x'], left_eye['y']),
+                            (ren_zhong['x'], ren_zhong['y']),
+                            (right_eye['x'], right_eye['y']))
+    page3['left_eye'] = left_eye
+    page3['right_eye'] = right_eye
+    page3['ren_zhong'] = ren_zhong
+    page3['angle'] = angel
+    final_data['page3'] = page3
 
     return final_data
     
