@@ -30,6 +30,13 @@ def parse_facial_data(data_str):
 
     # 转换为Python字典
     data = json.loads(json_str_clean)
+    s = data['面部年龄']
+    s = s.replace('岁', '')
+    parts = s.split('-')
+    start_age = int(parts[0])
+    end_age = int(parts[1])
+    data['start_age'] = start_age
+    data['end_age'] = end_age
     return data
     
 
@@ -48,7 +55,7 @@ def GetPicDesc(img_url):
                             "url": img_url
                         },
                     },
-                    {"type": "text", "text": "告诉我图片中人物的以下特征，只要答案，格式为json字符串，用9个字以内概括图片三庭五眼的特征 面部年龄（给出区间年龄） 脸型 嘴型 眼袋 眼型 鼻型 法令纹（有法令纹/无法令纹） 人中（答案要有人中两个字） 眉形 瞳孔颜色（答案要有瞳色两个字） 肤色（粉一白/粉二白/粉三白/黄一白/黄二白/黄黑皮）直得分 曲得分 直曲总分（直得分-曲得分） 大量感得分 小量感得分 量感总分（大量感得分-小量感得） 面部立体度（总分十分）瞳距（毫米）"},
+                    {"type": "text", "text": "告诉我图片中人物的以下特征，只要答案，格式为json字符串，用9个字以内概括图片三庭五眼的特征 面部年龄（给出区间年龄） 脸型 嘴型 眼袋 眼型 鼻型 眼皮（双眼皮/单眼皮） 法令纹（有法令纹/无法令纹） 人中（答案要有人中两个字） 眉形 瞳孔颜色（答案要有瞳色两个字） 肤色（粉一白/粉二白/粉三白/黄一白/黄二白/黄黑皮）直得分 曲得分 直曲总分（直得分-曲得分） 大量感得分 小量感得分 量感总分（大量感得分-小量感得） 面部立体度（总分十分）瞳距（毫米）"},
                 ],
             }
         ],
@@ -80,6 +87,13 @@ def GetFacePoint(detection_result, width, height):
 def distance(x1, y1, x2, y2):
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
+def angle(x1, y1, x2, y2):
+    dx = x2 - x1
+    dy = y2 - y1
+    angle_rad = math.atan2(dy, dx)
+    angle_deg = math.degrees(angle_rad)
+    return angle_deg
+
 def GetDetector(path):
     mp_image = mp.Image.create_from_file(path)
     mp_ret = detector.detect(mp_image)
@@ -96,15 +110,15 @@ def GetFinalData(fire_ret, save_path, width, height):
     final_data = {}
     final_data['face_figure'] = fire_ret
     page1 = {}
-    point_data = GetFacePoint(mp_ret, width, height)
-    p0 = point_data[34]
-    p1 = point_data[33]
-    p2 = point_data[133]
-    p3 = point_data[362]
-    p4 = point_data[263]
-    p5 = point_data[356]
+    p = GetFacePoint(mp_ret, width, height)
+    p0 = p[34]
+    p1 = p[33]
+    p2 = p[133]
+    p3 = p[362]
+    p4 = p[263]
+    p5 = p[356]
     page1['line_x_array'] = [p0['x'], p1['x'], p2['x'], p3['x'], p4['x'], p5['x']]
-    tongju = distance(point_data[468]['x'], point_data[468]['y'], point_data[473]['y'], point_data[473]['y'])
+    tongju = distance(p[468]['x'], p[468]['y'], p[473]['y'], p[473]['y'])
     d0 = (p1['x'] - p0['x'])*(pd/10)/tongju
     d1 = (p2['x'] - p1['x'])*(pd/10)/tongju
     d2 = (p3['x'] - p2['x'])*(pd/10)/tongju
@@ -112,5 +126,37 @@ def GetFinalData(fire_ret, save_path, width, height):
     d4 = (p5['x'] - p4['x'])*(pd/10)/tongju
     page1['line_distance_array'] = [d0, d1, d2, d3, d4]
     final_data['page1'] = page1
+
+    page2 = {}
+    right_eye = {}
+    right_eye['height'] = distance(p[470]['x'], p[470]['y'], p[472]['y'], p[472]['y'])
+    right_eye['width'] =  distance(p[33]['x'], p[33]['y'], p[133]['y'], p[133]['y'])
+    right_eye['top'] = p[470]
+    right_eye['bottom'] = p[472]
+    right_eye['right'] = p[33]
+    right_eye['left'] = p[133]
+    page2['right_eye'] = right_eye
+
+    left_eye = {}
+    left_eye['height'] = distance(p[263]['x'], p[263]['y'], p[363]['y'], p[363]['y'])
+    left_eye['width'] =  distance(p[475]['x'], p[475]['y'], p[477]['y'], p[477]['y'])
+    left_eye['top'] = p[475]
+    left_eye['bottom'] = p[477]
+    left_eye['right'] = p[363]
+    left_eye['left'] = p[263]
+    page2['left_eye'] = left_eye
+
+    right_eyebrow = {}
+    right_eyebrow['angle'] = angle(p[55]['x'], p[55]['x'], p[52]['x'], p[52]['x'])
+    right_eyebrow['distance'] = distance(p[66]['x'], p[66]['y'], p[158]['y'], p[158]['y'])
+    page2['right_eyebrow'] = right_eyebrow
+
+    left_eyebrow = {}
+    left_eyebrow['angle'] = angle(p[285]['x'], p[285]['x'], p[282]['x'], p[282]['x'])
+    left_eyebrow['distance'] = distance(p[295]['x'], p[295]['y'], p[385]['y'], p[385]['y'])
+    page2['left_eyebrow'] = left_eyebrow
+
+    final_data['page2'] = page2
+
     return final_data
     

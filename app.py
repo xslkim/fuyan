@@ -10,6 +10,7 @@ from test import draw_line_on_image
 from flask import Flask, jsonify
 from FaceArk import GetPicDesc
 from FaceArk import GetFinalData
+from flask_cors import CORS
 
 
 # 设置静态文件夹路径
@@ -17,6 +18,8 @@ APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC_FOLDER = os.path.join(APP_ROOT, 'static')
 
 app = Flask(__name__)
+
+CORS(app)
 
 # 配置
 UPLOAD_FOLDER = 'uploads'
@@ -120,7 +123,7 @@ def upload_file_line():
                 fire_ret = GetPicDesc(url)
                 img = Image.open(save_path)
 
-                final_data = GetFinalData(fire_ret, save_path, original_img.width, original_img.height)
+                final_data = GetFinalData(fire_ret, save_path, img.width, img.height)
                 out_img = draw_line_on_image(img, final_data)
                 out_img.save(processed_path)
                 processed_img = processed_filename
@@ -160,16 +163,16 @@ def upload_file_face():
                 file.save(save_path)
                 file.close()
 
-                feature_point = face(save_path)
-
                 url = f'http://{GetServerIP()}/imgs/{unique_filename}'
-                face_figure = GetPicDesc(url)
+                fire_ret = GetPicDesc(url)
+                img = Image.open(save_path)
+
+                final_data = GetFinalData(fire_ret, save_path, img.width, img.height)
 
                 
                 data['ret'] = 'Success'
                 data['msg'] = ''
-                data['feature_point'] = feature_point
-                data['face_figure'] = face_figure
+                data['data'] = final_data
                     
             else:
                 error = 'File type not allowed'
