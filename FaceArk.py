@@ -126,8 +126,9 @@ def GetDetector(path):
 def GetFinalData(fire_ret, save_path, width, height):
     mp_ret = GetDetector(save_path)
     if fire_ret['瞳距'] != None:
-        fire_ret['瞳距'] = fire_ret['瞳距'].replace('毫米', '')
         try:
+            if '毫米' in fire_ret['瞳距']:
+                fire_ret['瞳距'] = fire_ret['瞳距'].replace('毫米', '')
             pd = int(fire_ret['瞳距'])
         except:
             pd = 62
@@ -141,10 +142,10 @@ def GetFinalData(fire_ret, save_path, width, height):
     page1 = {}
     p = GetFacePoint(mp_ret, width, height)
     p0 = p[34]
-    p1 = p[33]
+    p1 = p[130]
     p2 = p[133]
     p3 = p[362]
-    p4 = p[263]
+    p4 = p[359]
     p5 = p[356]
     page1['line_x_array'] = [p0['x'], p1['x'], p2['x'], p3['x'], p4['x'], p5['x']]
     tongju = distance(p[468]['x'], p[468]['y'], p[473]['y'], p[473]['y'])
@@ -158,21 +159,21 @@ def GetFinalData(fire_ret, save_path, width, height):
 
     page2 = {}
     right_eye = {}
-    right_eye['height'] = distance(p[470]['x'], p[470]['y'], p[472]['y'], p[472]['y'])
-    right_eye['width'] =  distance(p[33]['x'], p[33]['y'], p[133]['y'], p[133]['y'])
+    right_eye['height'] = distance(p[470]['x'], p[470]['y'], p[23]['y'], p[23]['y'])
+    right_eye['width'] =  distance(p[130]['x'], p[130]['y'], p[133]['y'], p[133]['y'])
     right_eye['top'] = p[470]
-    right_eye['bottom'] = p[472]
-    right_eye['right'] = p[33]
+    right_eye['bottom'] = p[23]
+    right_eye['right'] = p[130]
     right_eye['left'] = p[133]
     page2['right_eye'] = right_eye
 
     left_eye = {}
-    left_eye['height'] = distance(p[263]['x'], p[263]['y'], p[363]['y'], p[363]['y'])
-    left_eye['width'] =  distance(p[475]['x'], p[475]['y'], p[477]['y'], p[477]['y'])
+    left_eye['height'] = distance(p[475]['x'], p[475]['y'], p[253]['y'], p[253]['y'])
+    left_eye['width'] =  distance(p[362]['x'], p[362]['y'], p[359]['y'], p[359]['y'])
     left_eye['top'] = p[475]
-    left_eye['bottom'] = p[477]
-    left_eye['right'] = p[363]
-    left_eye['left'] = p[263]
+    left_eye['bottom'] = p[253]
+    left_eye['right'] = p[362]
+    left_eye['left'] = p[359]
     page2['left_eye'] = left_eye
 
     right_eyebrow = {}

@@ -58,6 +58,15 @@ def draw_line_on_image(img, final_data):
   page2 = final_data['page2']
   r = page2['right_eye']
   draw.line((r['right']['x'], r['top']['y'], r['left']['x'], r['top']['y']),fill='red', width=1)
+  draw.line((r['right']['x'], r['bottom']['y'], r['left']['x'], r['bottom']['y']),fill='red', width=1)
+  draw.line((r['right']['x'], r['bottom']['y'], r['right']['x'], r['top']['y']),fill='red', width=1)
+  draw.line((r['left']['x'], r['bottom']['y'], r['left']['x'], r['top']['y']),fill='red', width=1)
+
+  r = page2['left_eye']
+  draw.line((r['right']['x'], r['top']['y'], r['left']['x'], r['top']['y']),fill='red', width=1)
+  draw.line((r['right']['x'], r['bottom']['y'], r['left']['x'], r['bottom']['y']),fill='red', width=1)
+  draw.line((r['right']['x'], r['bottom']['y'], r['right']['x'], r['top']['y']),fill='red', width=1)
+  draw.line((r['left']['x'], r['bottom']['y'], r['left']['x'], r['top']['y']),fill='red', width=1)
 
   page3 = final_data['page3']
   l = page3['left_eye']

@@ -109,10 +109,13 @@ def upload_file_line():
                 file_ext = file.filename.rsplit('.', 1)[1].lower()
                 unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
                 save_path = os.path.join('/var/www/html/imgs', unique_filename)
-                original_img = unique_filename
+                
                 # 保存原始文件
                 file.save(save_path)
                 file.close()
+
+                
+                original_img = unique_filename
 
                 # 处理图片
                 processed_filename = f"processed_{unique_filename}"
@@ -122,6 +125,8 @@ def upload_file_line():
                 url = f'http://{GetServerIP()}/imgs/{unique_filename}'
                 fire_ret = GetPicDesc(url)
                 img = Image.open(save_path)
+                upload_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                img.save(upload_path)
 
                 final_data = GetFinalData(fire_ret, save_path, img.width, img.height)
                 out_img = draw_line_on_image(img, final_data)
