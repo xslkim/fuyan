@@ -276,7 +276,7 @@ def test_cloth():
     
 
 @app.route('/cloth', methods=['POST'])
-def test_cloth():
+def cloth():
     # 检查是否有文件上传
     if 'file' not in request.files:
         return jsonify({'error': 'No file uploaded'}), 400
