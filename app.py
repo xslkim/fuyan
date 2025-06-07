@@ -76,6 +76,7 @@ def upload_file():
                 # 处理图片
                 processed_filename = f"processed_{unique_filename}"
                 processed_path = os.path.join(app.config['PROCESSED_FOLDER'], processed_filename)
+                processed_img = processed_filename
                 
                 img = Image.open(upload_path)
                 gray_img = draw_landmarks_on_image(img, upload_path)

@@ -190,13 +190,13 @@ def GetFinalData(fire_ret, save_path, width, height):
     page3 = {}
     left_eye = p[473]
     right_eye = p[468]
-    ren_zhong = p[164]
+    bi_jian = p[4]
     angel = calculate_angle((left_eye['x'], left_eye['y']),
-                            (ren_zhong['x'], ren_zhong['y']),
+                            (bi_jian['x'], bi_jian['y']),
                             (right_eye['x'], right_eye['y']))
     page3['left_eye'] = left_eye
     page3['right_eye'] = right_eye
-    page3['ren_zhong'] = ren_zhong
+    page3['bi_jian'] = bi_jian
     page3['angle'] = angel
     final_data['page3'] = page3
 
