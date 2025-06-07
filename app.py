@@ -273,6 +273,47 @@ def test_cloth():
             'status': 'error',
             'error': str(e)
         }), 500
+    
+
+@app.route('/cloth', methods=['POST'])
+def test_cloth():
+    # 检查是否有文件上传
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+    
+    file = request.files['file']
+    
+    # 检查文件名是否为空
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    # 检查文件是否为图片
+    if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+        return jsonify({'error': 'Unsupported file format'}), 400
+    
+    try:
+        # 生成唯一文件名
+        file_ext = file.filename.rsplit('.', 1)[1].lower()
+        unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
+
+        save_path = os.path.join('/var/www/html/imgs', unique_filename)
+        # 保存原始文件
+        file.save(save_path)
+        file.close()
+
+        url = f'http://{GetServerIP()}/imgs/{unique_filename}'
+        clothDesc = GetClothDesc(url)
+        data = {}
+        data['ret'] = 'Success'
+        data['msg'] = ''
+        data['data'] = clothDesc
+        
+        return jsonify(data) 
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
