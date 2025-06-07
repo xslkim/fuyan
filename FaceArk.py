@@ -148,12 +148,13 @@ def GetFinalData(fire_ret, save_path, width, height):
     p4 = p[359]
     p5 = p[356]
     page1['line_x_array'] = [p0['x'], p1['x'], p2['x'], p3['x'], p4['x'], p5['x']]
-    tongju = distance(p[468]['x'], p[468]['y'], p[473]['y'], p[473]['y'])
-    d0 = (p1['x'] - p0['x'])*(pd/10)/tongju
-    d1 = (p2['x'] - p1['x'])*(pd/10)/tongju
-    d2 = (p3['x'] - p2['x'])*(pd/10)/tongju
-    d3 = (p4['x'] - p3['x'])*(pd/10)/tongju
-    d4 = (p5['x'] - p4['x'])*(pd/10)/tongju
+    tongju_pixel = distance(p[468]['x'], p[468]['y'], p[473]['x'], p[473]['y'])
+    pd_cm = pd/10
+    d0 = (p1['x'] - p0['x'])*(pd_cm)/tongju_pixel
+    d1 = (p2['x'] - p1['x'])*(pd_cm)/tongju_pixel
+    d2 = (p3['x'] - p2['x'])*(pd_cm)/tongju_pixel
+    d3 = (p4['x'] - p3['x'])*(pd_cm)/tongju_pixel
+    d4 = (p5['x'] - p4['x'])*(pd_cm)/tongju_pixel
     page1['line_distance_array'] = [d0, d1, d2, d3, d4]
     final_data['page1'] = page1
 

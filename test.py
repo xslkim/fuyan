@@ -70,7 +70,7 @@ def draw_line_on_image(img, final_data):
 
   page3 = final_data['page3']
   l = page3['left_eye']
-  z = page3['bi_jian']
+  z = page3['bi_jian'] 
   r = page3['right_eye']
   draw.line((l['x'], l['y'], z['x'], z['y']),fill='blue', width=1)
   draw.line((r['x'], r['y'], z['x'], z['y']),fill='blue', width=1)
