@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片上传测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        #preview {
+            max-width: 300px;
+            max-height: 300px;
+            margin-top: 10px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>图片上传测试</h1>
+    <div class="container">
+        <h2>选择图片文件</h2>
+        <input type="file" id="imageInput" accept="image/*">
+        <div>
+            <img id="preview" style="display: none;">
+        </div>
+        <button id="uploadBtn" disabled>上传图片</button>
+        
+        <h3>服务器响应：</h3>
+        <div id="result">请先选择图片并上传</div>
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const preview = document.getElementById('preview');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const resultDiv = document.getElementById('result');
+        
+        // 当选择文件时显示预览
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    preview.src = event.target.result;
+                    preview.style.display = 'block';
+                    uploadBtn.disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // 上传按钮点击事件
+        uploadBtn.addEventListener('click', function() {
+            const file = imageInput.files[0];
+            if (!file) {
+                resultDiv.textContent = '请先选择图片文件';
+                return;
+            }
+            
+            uploadBtn.disabled = true;
+            resultDiv.textContent = '上传中...';
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            fetch('http://47.95.20.1:5000/face', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('网络响应不正常');
+                }
+                return response.json();
+            })
+            .then(data => {
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+                uploadBtn.disabled = false;
+            })
+            .catch(error => {
+                resultDiv.textContent = '上传出错: ' + error.message;
+                uploadBtn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>

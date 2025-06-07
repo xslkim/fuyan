@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>图片处理测试</title>
+    <style>
+        #jsonResult {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 600px;
+            overflow-x: auto;
+        }
+        #processedImage {
+            max-width: 500px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>上传图片进行处理</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required>
+        <button type="submit">上传并处理</button>
+    </form>
+    
+    <div id="result" style="margin-top: 20px;">
+        <h2>处理结果</h2>
+        <pre id="jsonResult"></pre>
+        <div id="imagePreview">
+            <h3>处理后的图片</h3>
+            <img id="processedImage">
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const fileInput = document.querySelector('input[type="file"]');
+            formData.append('file', fileInput.files[0]);
+            
+            // 显示加载状态
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>处理中，请稍候...</p>';
+            
+            fetch('http://47.95.20.1:5000/test_cloth', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 重建结果DOM
+                resultDiv.innerHTML = `
+                    <h2>处理结果</h2>
+                    <pre id="jsonResult"></pre>
+                    <div id="imagePreview">
+                        <h3>处理后的图片</h3>
+                        <img id="processedImage">
+                    </div>
+                `;
+                
+                // 显示JSON结果
+                document.getElementById('jsonResult').textContent = JSON.stringify(data, null, 2);
+                
+                // 显示处理后的图片
+                if (data.status === 'success' && data.processed.url) {
+                    document.getElementById('processedImage').src = data.processed.url;
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<p style="color: red;">处理出错: ${error.message}</p>`;
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
