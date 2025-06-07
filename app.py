@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, send_from_directory
 from werkzeug.utils import secure_filename
 from PIL import Image
+import io
 import os
 import uuid
 from test import draw_landmarks_on_image
@@ -10,6 +11,7 @@ from test import draw_line_on_image
 from flask import Flask, jsonify
 from FaceArk import GetPicDesc
 from FaceArk import GetFinalData
+from FaceArk import GetClothDesc
 from flask_cors import CORS
 
 
@@ -196,6 +198,81 @@ def upload_file_face():
 def index():
     # 返回HTML文件
     return send_from_directory(STATIC_FOLDER, 'test_face.html')
+
+
+@app.route('/test_cloth', methods=['POST'])
+def test_cloth():
+    # 检查是否有文件上传
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+    
+    file = request.files['file']
+    
+    # 检查文件名是否为空
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    # 检查文件是否为图片
+    if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+        return jsonify({'error': 'Unsupported file format'}), 400
+    
+    try:
+        # 生成唯一文件名
+        file_ext = file.filename.rsplit('.', 1)[1].lower()
+        unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
+
+        save_path = os.path.join('/var/www/html/imgs', unique_filename)
+        # 保存原始文件
+        file.save(save_path)
+        file.close()
+
+        url = f'http://{GetServerIP()}/imgs/{unique_filename}'
+        clothDesc = GetClothDesc(url)
+
+        img = Image.open(save_path)
+        original_format = img.format
+        original_mode = img.mode
+        original_size = img.size
+        original_width, original_height = original_size
+        gray_img = img.convert('L')
+
+        # 保存处理后的图片
+        processed_filename = f"processed_{unique_filename}"
+        processed_path = os.path.join('/var/www/html/imgs', processed_filename)
+        gray_img.save(processed_path, format='JPEG')
+        process_url = f'http://{GetServerIP()}/imgs/{processed_filename}'
+        
+        # 准备返回的JSON数据
+        result = {
+            'status': 'success',
+            'original': {
+                'filename': unique_filename,
+                'format': original_format,
+                'mode': original_mode,
+                'width': original_width,
+                'height': original_height,
+                'size': original_size,
+                'clothDesc':clothDesc
+            },
+            'processed': {
+                'filename': processed_filename,
+                'url': process_url,
+                'format': 'JPEG',
+                'mode': 'L',
+                'width': original_width,
+                'height': original_height,
+                'processing_time_seconds': 2
+            },
+            'message': 'Image successfully converted to grayscale'
+        }
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

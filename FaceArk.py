@@ -23,7 +23,7 @@ client = Ark(
     api_key='14fc0280-fc65-462d-ac2d-50178c0212e3'
 )
 
-def parse_facial_data(data_str):
+def parse_face_json_data(data_str):
     print(f'原始字符串 {data_str}')
     # 去除多余的标记和换行符
     json_str_clean = data_str.strip('```json\n').strip('```').strip()
@@ -38,8 +38,44 @@ def parse_facial_data(data_str):
     data['start_age'] = start_age
     data['end_age'] = end_age
     return data
-    
 
+def parse_cloth_json_data(data_str):
+    print(f'衣服原始字符串 {data_str}')
+    # 去除多余的标记和换行符
+    json_str_clean = data_str.strip('```json\n').strip('```').strip()
+
+    # 转换为Python字典
+    data = json.loads(json_str_clean)
+    return data
+    
+def GetClothDesc(img_url):
+    response = client.chat.completions.create(
+        model="doubao-1.5-vision-pro-250328",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": img_url
+                        },
+                    },
+                    {"type": "text", "text": "告诉我图片中服装的以下特征，只要答案，格式为json字符串，颜色四季型（春季型/夏季型/秋季型/冬季型，可以多选）适合年龄范围 直得分 曲得分 直曲总分（直得分-曲得分） 大量感得分 小量感得分 量感总分（大量感得分-小量感得）立体度（就是与面部风格立体度高的人的适配程度，总分十分）适合体型（H型/​X型/A型/O型/T型，可以多选）​​适合场景（职业/商务、休闲/日常、场合社交） 特点（显高、显瘦、显气场、 显腰线 、显腿长、显胸大、显胸小）以及10个最能概括衣服特征的标签"},
+                ],
+            }
+        ],
+    )
+
+    text = response.choices[0].message.content
+    result = {}
+
+    try:
+        result = parse_cloth_json_data(text)
+    except:
+        print(f'Error {text}')
+
+    return result
 
 def GetPicDesc(img_url):
     response = client.chat.completions.create(
@@ -55,7 +91,7 @@ def GetPicDesc(img_url):
                             "url": img_url
                         },
                     },
-                    {"type": "text", "text": "告诉我图片中人物的以下特征，只要答案，格式为json字符串，用9个字以内概括图片三庭五眼的特征 面部年龄（给出区间年龄） 脸型 嘴型 眼袋 眼型 鼻型 眼皮（双眼皮/单眼皮） 法令纹（有法令纹/无法令纹） 人中（答案要有人中两个字） 眉形 瞳孔颜色（答案要有瞳色两个字） 肤色（粉一白/粉二白/粉三白/黄一白/黄二白/黄黑皮）直得分 曲得分 直曲总分（直得分-曲得分） 大量感得分 小量感得分 量感总分（大量感得分-小量感得） 面部立体度（总分十分）瞳距（毫米）"},
+                    {"type": "text", "text": "告诉我图片中人物的以下特征，只要答案，格式为json字符串，用9个字以内概括图片三庭五眼的特征（答案要有三庭五眼四个字） 面部年龄（给出区间年龄） 脸型 嘴型 眼袋（答案要有眼袋两个个字） 眼型 鼻型 眼皮（双眼皮/单眼皮） 法令纹（有法令纹/无法令纹） 人中（答案要有人中两个字） 眉形 瞳色（答案要有瞳色两个字） 脖长（脖长适中/脖子短/脖子长） 肤色（粉一白/粉二白/粉三白/黄一白/黄二白/黄黑皮）直得分 曲得分 直曲总分（直得分-曲得分） 大量感得分 小量感得分 量感总分（大量感得分-小量感得） 面部立体度（总分十分）瞳距（毫米）"},
                 ],
             }
         ],
