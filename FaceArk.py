@@ -119,7 +119,8 @@ def GetFacePoint(detection_result, width, height):
     for i in range(len(face_landmarks)):
       x = face_landmarks[i].x * width
       y = face_landmarks[i].y * height
-      data.append({'id':i, 'x':round(x, 2), 'y':round(y, 2)})
+      z = face_landmarks[i].z
+      data.append({'id':i, 'x':round(x, 2), 'y':round(y, 2), 'z':round(z, 2)})
     
     return data
 

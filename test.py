@@ -28,6 +28,7 @@ def draw_landmarks_on_image(rgb_image, path):
     point_size = 2
     x = p['x']
     y = p['y']
+    z = p['z']
     draw.ellipse([(x, y), (x+point_size, y+point_size)], fill='yellow')
 
 
