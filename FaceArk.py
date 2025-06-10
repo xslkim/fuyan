@@ -30,7 +30,10 @@ def parse_face_json_data(data_str):
 
     # 转换为Python字典
     data = json.loads(json_str_clean)
-    s = data['面部年龄']
+    if '面部年龄' in data:
+        s = data['面部年龄']
+    elif '年龄' in data:
+        s = data['年龄']
     s = s.replace('岁', '')
     parts = s.split('-')
     start_age = int(parts[0])
