@@ -102,7 +102,7 @@ def GetPicDesc(img_url):
     result = {}
 
     try:
-        result = parse_facial_data(text)
+        result = parse_face_json_data(text)
     except:
         print(f'Error {text}')
 
