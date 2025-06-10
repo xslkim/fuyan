@@ -32,6 +32,7 @@ def parse_face_json_data(data_str):
     data = json.loads(json_str_clean)
     if '面部年龄' in data:
         s = data['面部年龄']
+        data['年龄'] = s
     elif '年龄' in data:
         s = data['年龄']
     s = s.replace('岁', '')
@@ -164,7 +165,7 @@ def GetDetector(path):
 
 def GetFinalData(fire_ret, save_path, width, height):
     mp_ret = GetDetector(save_path)
-    if fire_ret['瞳距'] != None:
+    if '瞳距' in fire_ret:
         try:
             if '毫米' in fire_ret['瞳距']:
                 fire_ret['瞳距'] = fire_ret['瞳距'].replace('毫米', '')
