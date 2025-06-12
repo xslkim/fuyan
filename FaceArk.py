@@ -182,6 +182,7 @@ def GetFinalData(fire_ret, save_path, width, height):
     final_data['face_figure'] = fire_ret
     page1 = {}
     p = GetFacePoint(mp_ret, width, height)
+    final_data['raw_point'] = p
     p0 = p[34]
     p1 = p[130]
     p2 = p[133]
