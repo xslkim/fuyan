@@ -11,7 +11,7 @@ from FaceArk import GetFacePoint
 from FaceArk import GetDetector
 
 def GetServerIP():
-   return '47.95.20.1' 
+   return '43.143.205.217' 
 
 # STEP 2: Create an FaceLandmarker object.
 
