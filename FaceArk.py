@@ -175,6 +175,9 @@ def GetPicDesc(img_url):
 def GetFacePoint(detection_result, width, height):
     data = []
     face_landmarks_list = detection_result.face_landmarks
+    if len(face_landmarks_list) == 0:
+        return None
+    
     face_landmarks = face_landmarks_list[0]
     for i in range(len(face_landmarks)):
       x = face_landmarks[i].x * width
@@ -230,6 +233,11 @@ def GetFinalData(fire_ret, save_path, width, height):
     final_data['face_figure'] = fire_ret
     page1 = {}
     p = GetFacePoint(mp_ret, width, height)
+    if p == None:
+        final_data['是否有标记点'] = '没有'
+        return final_data
+    else:
+        final_data['是否有标记点'] = '有'
     final_data['raw_point'] = p
     pd = fire_ret['瞳距']
     p0 = p[34]

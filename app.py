@@ -131,8 +131,12 @@ def upload_file_line():
                 upload_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 img.save(upload_path)
 
-                final_data = GetFinalData(fire_ret, save_path, img.width, img.height)
-                out_img = draw_line_on_image(img, final_data)
+                if '图片是否有人' in fire_ret:
+                    if '有人' in fire_ret['图片是否有人']:
+                        final_data = GetFinalData(fire_ret, save_path, img.width, img.height)
+                        out_img = draw_line_on_image(img, final_data)
+                
+                
                 out_img.save(processed_path)
                 processed_img = processed_filename
 
@@ -175,7 +179,10 @@ def upload_file_face():
                 fire_ret = GetPicDesc(url)
                 img = Image.open(save_path)
 
-                final_data = GetFinalData(fire_ret, save_path, img.width, img.height)
+                final_data = {'图片是否有人':'没人'}
+                if '图片是否有人' in fire_ret:
+                    if '有人' in fire_ret['图片是否有人']:
+                        final_data = GetFinalData(fire_ret, save_path, img.width, img.height)
 
                 
                 data['ret'] = 'Success'
