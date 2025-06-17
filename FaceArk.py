@@ -41,6 +41,19 @@ def parse_face_json_data(data_str):
     end_age = int(parts[1])
     data['start_age'] = start_age
     data['end_age'] = end_age
+
+    if '瞳距' in data:
+        try:
+            if '毫米' in data['瞳距']:
+                data['瞳距'] = data['瞳距'].replace('毫米', '')
+            pd = int(data['瞳距'])
+        except:
+            pd = 62
+        data['瞳距'] = pd
+    else:
+        pd = 62
+        data['瞳距'] = pd
+
     return data
 
 def parse_cloth_json_data(data_str):
@@ -166,23 +179,12 @@ def GetDetector(path):
 
 def GetFinalData(fire_ret, save_path, width, height):
     mp_ret = GetDetector(save_path)
-    if '瞳距' in fire_ret:
-        try:
-            if '毫米' in fire_ret['瞳距']:
-                fire_ret['瞳距'] = fire_ret['瞳距'].replace('毫米', '')
-            pd = int(fire_ret['瞳距'])
-        except:
-            pd = 62
-        fire_ret['瞳距'] = pd
-    else:
-        pd = 62
-        fire_ret['瞳距'] = pd
-
     final_data = {}
     final_data['face_figure'] = fire_ret
     page1 = {}
     p = GetFacePoint(mp_ret, width, height)
     final_data['raw_point'] = p
+    pd = fire_ret['瞳距']
     p0 = p[34]
     p1 = p[130]
     p2 = p[133]
