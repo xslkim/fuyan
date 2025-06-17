@@ -28,19 +28,22 @@ def parse_face_json_data(data_str):
     # 去除多余的标记和换行符
     json_str_clean = data_str.strip('```json\n').strip('```').strip()
 
-    # 转换为Python字典
-    data = json.loads(json_str_clean)
-    if '面部年龄' in data:
-        s = data['面部年龄']
-        data['年龄'] = s
-    elif '年龄' in data:
-        s = data['年龄']
-    s = s.replace('岁', '')
-    parts = s.split('-')
-    start_age = int(parts[0])
-    end_age = int(parts[1])
-    data['start_age'] = start_age
-    data['end_age'] = end_age
+    try:
+        # 转换为Python字典
+        data = json.loads(json_str_clean)
+        if '面部年龄' in data:
+            s = data['面部年龄']
+            data['年龄'] = s
+        elif '年龄' in data:
+            s = data['年龄']
+        s = s.replace('岁', '')
+        parts = s.split('-')
+        start_age = int(parts[0])
+        end_age = int(parts[1])
+        data['start_age'] = start_age
+        data['end_age'] = end_age
+    except:
+        print('转换年龄出错')
 
     if '瞳距' in data:
         try:
@@ -98,9 +101,14 @@ def checkKey(key, bak_key, data, bak_value):
     if key in data:
         print(f'{key}:{data[key]}')
     else:
-        if bak_key != None and bak_key in data:
-            print(f'bak_key {key}:{data[bak_key]}')
-            data[key] = data[bak_key]
+        if bak_key != None:
+            if any(bak_key in key for key in data):
+                matching_keys = [key for key in data if bak_key in key]
+                print(f'bak_key {key}:{data[matching_keys[0]]}')
+                data[key] = data[matching_keys[0]]
+            else:
+                print(f'bak_value {key}:{bak_value}')
+                data[key] = bak_value
         else:
             print(f'bak_value {key}:{bak_value}')
             data[key] = bak_value
@@ -120,7 +128,7 @@ def GetPicDesc(img_url):
                             "url": img_url
                         },
                     },
-                    {"type": "text", "text": "告诉我图片中人物的以下特征，只要答案，格式为json字符串，用9个字以内概括图片三庭五眼的特征（答案要有三庭五眼四个字） 面部年龄（给出区间年龄） 脸型 嘴型 眼袋（答案要有眼袋两个个字） 眼型 鼻型 眼皮（双眼皮/单眼皮） 法令纹（有法令纹/无法令纹） 人中（答案要有人中两个字） 眉形 瞳色（答案要有瞳色两个字） 脖长（脖长适中/脖子短/脖子长） 肤色（粉一白/粉二白/粉三白/黄一白/黄二白/黄黑皮）直得分 曲得分 直曲总分（直得分-曲得分） 大量感得分 小量感得分 量感总分（大量感得分-小量感得） 面部立体度（总分十分）瞳距（毫米）"},
+                    {"type": "text", "text": "告诉我图片中人物的以下特征，只要答案，格式为json字符串，图片是否有人（有人/没人） 用9个字以内概括图片三庭五眼的特征（答案要有三庭五眼四个字） 面部年龄（给出区间年龄） 脸型 嘴型 眼袋（答案要有眼袋两个个字） 眼型 鼻型 眼皮（双眼皮/单眼皮） 法令纹（有法令纹/无法令纹） 人中（答案要有人中两个字） 眉形 瞳色（答案要有瞳色两个字） 脖长（脖长适中/脖子短/脖子长） 肤色（粉一白/粉二白/粉三白/黄一白/黄二白/黄黑皮）直得分 曲得分 直曲总分（直得分-曲得分） 大量感得分 小量感得分 量感总分（大量感得分-小量感得） 面部立体度（总分十分）瞳距（毫米）"},
                 ],
             }
         ],
@@ -129,10 +137,15 @@ def GetPicDesc(img_url):
 
     text = response.choices[0].message.content
     result = {}
-
     try:
         result = parse_face_json_data(text)
-        checkKey('三庭五眼', None, result, "适中")
+    except:
+        print('parse_face_json_data exception')
+
+    try:
+        checkKey('图片是否有人', '是否有人', result, "没人")
+        checkKey('三庭五眼特征', '三庭五眼', result, "适中")
+        checkKey('年龄', None, result, "25-35")
         checkKey('脸型', None, result, "适中")
         checkKey('嘴型', None, result, "适中")
         checkKey('眼袋', None, result, "适中")
@@ -145,18 +158,19 @@ def GetPicDesc(img_url):
         checkKey('瞳色', None, result, "黑色")
         checkKey('脖长', None, result, "适中")
         checkKey('肤色', None, result, "白")
-        checkKey('直得分', None, result, "5分")
-        checkKey('曲得分', None, result, "5分")
-        checkKey('直曲总分', None, result, "5分")
-        checkKey('大量感得分', '大量感', result, "5分")
-        checkKey('小量感得分', '小量感', result, "5分")
-        checkKey('量感总分', '量感', result, "5分")
-        checkKey('面部立体度', '量立体度', result, "5分")
-        checkKey('瞳距')
+        checkKey('直得分', None, result, 7)
+        checkKey('曲得分', None, result, 3)
+        checkKey('直曲总分', None, result, 4)
+        checkKey('大量感得分', '大量感', result, 6)
+        checkKey('小量感得分', '小量感', result, 4)
+        checkKey('量感总分', '量感', result, 2)
+        checkKey('面部立体度', '量立体度', result, 8)
+        checkKey('start_age', None, result, 25)
+        checkKey('end_age', None, result, 35)
     except:
         print(f'Error {text}')
 
-    return result, text
+    return result
 
 def GetFacePoint(detection_result, width, height):
     data = []
