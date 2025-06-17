@@ -94,6 +94,18 @@ def GetClothDesc(img_url):
 
     return result
 
+def checkKey(key, bak_key, data, bak_value):
+    if key in data:
+        print(f'{key}:{data[key]}')
+    else:
+        if bak_key != None and bak_key in data:
+            print(f'bak_key {key}:{data[bak_key]}')
+            data[key] = data[bak_key]
+        else:
+            print(f'bak_value {key}:{bak_value}')
+            data[key] = bak_value
+        
+
 def GetPicDesc(img_url):
     response = client.chat.completions.create(
         # 指定您创建的方舟推理接入点 ID，此处已帮您修改为您的推理接入点 ID
@@ -120,10 +132,31 @@ def GetPicDesc(img_url):
 
     try:
         result = parse_face_json_data(text)
+        checkKey('三庭五眼', None, result, "适中")
+        checkKey('脸型', None, result, "适中")
+        checkKey('嘴型', None, result, "适中")
+        checkKey('眼袋', None, result, "适中")
+        checkKey('眼型', None, result, "适中")
+        checkKey('鼻型', None, result, "适中")
+        checkKey('眼皮', None, result, "适中")
+        checkKey('法令纹', None, result, "适中")
+        checkKey('人中', None, result, "适中")
+        checkKey('眉形', None, result, "适中")
+        checkKey('瞳色', None, result, "黑色")
+        checkKey('脖长', None, result, "适中")
+        checkKey('肤色', None, result, "白")
+        checkKey('直得分', None, result, "5分")
+        checkKey('曲得分', None, result, "5分")
+        checkKey('直曲总分', None, result, "5分")
+        checkKey('大量感得分', '大量感', result, "5分")
+        checkKey('小量感得分', '小量感', result, "5分")
+        checkKey('量感总分', '量感', result, "5分")
+        checkKey('面部立体度', '量立体度', result, "5分")
+        checkKey('瞳距')
     except:
         print(f'Error {text}')
 
-    return result
+    return result, text
 
 def GetFacePoint(detection_result, width, height):
     data = []

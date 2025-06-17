@@ -126,7 +126,7 @@ def upload_file_line():
                 
 
                 url = f'http://{GetServerIP()}/imgs/{unique_filename}'
-                fire_ret = GetPicDesc(url)
+                fire_ret, src_text = GetPicDesc(url)
                 img = Image.open(save_path)
                 upload_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 img.save(upload_path)
@@ -172,7 +172,7 @@ def upload_file_face():
                 file.close()
 
                 url = f'http://{GetServerIP()}/imgs/{unique_filename}'
-                fire_ret = GetPicDesc(url)
+                fire_ret, src_text = GetPicDesc(url)
                 img = Image.open(save_path)
 
                 final_data = GetFinalData(fire_ret, save_path, img.width, img.height)
@@ -180,6 +180,7 @@ def upload_file_face():
                 
                 data['ret'] = 'Success'
                 data['msg'] = ''
+                data['src_text'] = src_text
                 data['data'] = final_data
                     
             else:
