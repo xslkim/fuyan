@@ -13,6 +13,8 @@ from FaceArk import GetPicDesc
 from FaceArk import GetFinalData
 from FaceArk import GetClothDesc
 from flask_cors import CORS
+from datetime import datetime
+import requests
 
 
 # 设置静态文件夹路径
@@ -199,6 +201,71 @@ def upload_file_face():
     except Exception as e:
         return 'jsonify Error'
 
+
+def allowed_file(filename):
+    """检查文件扩展名是否合法"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def generate_filename(url):
+    """生成唯一的文件名"""
+    ext = url.split('.')[-1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        ext = 'jpg'  # 默认扩展名
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    unique_id = str(uuid.uuid4())[:8]
+    return f"{timestamp}_{unique_id}.{ext}"
+
+@app.route('/face_url', methods=['GET'])
+def face_url():
+    image_url = request.args.get('url')
+    
+    if not image_url:
+        return jsonify({'error': 'Missing image URL parameter'}), 400
+    
+    try:
+        # 下载图片
+        response = requests.get(image_url, stream=True)
+        response.raise_for_status()
+        
+        # 检查内容类型是否为图片
+        content_type = response.headers.get('content-type', '')
+        if 'image' not in content_type:
+            return jsonify({'error': 'URL does not point to an image'}), 400
+        
+        # 打开图片进行分析
+        img = Image.open(io.BytesIO(response.content))
+        
+        # 生成保存的文件名
+        filename = generate_filename(image_url)
+        save_path = os.path.join('/var/www/html/imgs', filename)
+        
+        # 保存图片（保持原始格式）
+        img.save(save_path, format=img.format if img.format else 'JPEG')
+        data  = {}
+        fire_ret = GetPicDesc(image_url)
+        # img = Image.open(save_path)
+
+        final_data = {'图片是否有人':'没人'}
+        if '图片是否有人' in fire_ret:
+            if '有人' in fire_ret['图片是否有人']:
+                final_data = GetFinalData(fire_ret, save_path, img.width, img.height)
+
+        data['ret'] = 'Success'
+        data['msg'] = ''
+        data['data'] = final_data
+        
+        try:
+            jsonstr = jsonify(data)
+            return jsonstr
+        except Exception as e:
+            return 'jsonify Error'
+    
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': f'Failed to download image: {str(e)}'}), 400
+    except IOError as e:
+        return jsonify({'error': f'Error processing image: {str(e)}'}), 500
+    except Exception as e:
+        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
     
 
 @app.route('/test_face')
