@@ -415,29 +415,6 @@ def cloth_url():
             'status': 'error',
             'error': str(e)
         }), 500
-    
-
-@app.route('/api/swapHair/v1', methods=['POST'])
-def api_swapHair_v1():
-    # 获取请求参数
-    data = request.get_json()
-    if not data or 'hair_id' not in data:
-        return jsonify({'error': 'Missing hair_id parameter'}), 400
-    if not data or 'task_id' not in data:
-        return jsonify({'error': 'Missing task_id parameter'}), 400
-    if not data or 'user_img_path' not in data:
-        return jsonify({'error': 'Missing user_img_path parameter'}), 400
-    if not data or 'is_hr' not in data:
-        return jsonify({'error': 'Missing is_hr parameter'}), 400
-    
-    if not data or 'output_format' not in data:
-        return jsonify({'error': 'Missing output_format parameter'}), 400
-
-    time.sleep(random.uniform(3, 6)) 
-
-    out = {"data":"star_stgr","msg":"success","state":0,"task_id":data['task_id']}
-    print(json.dumps(out))
-    return jsonify(out) 
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
