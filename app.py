@@ -222,6 +222,22 @@ def generate_filename(url):
 @app.route('/face_url', methods=['GET'])
 def face_url():
     image_url = request.args.get('url')
+    shen_gao = request.args.get('shen_gao')
+    if not shen_gao:
+        shen_gao = 165
+    ti_zhong = request.args.get('ti_zhong')
+    if not ti_zhong:
+        ti_zhong = 55
+    sex = request.args.get('sex')
+    if not sex:
+        sex = '女'
+
+    if sex == 'male':
+        sex = '男'
+    elif sex == 'female':
+        sex = '女'
+
+    print(f"shen_gao: {shen_gao}, ti_zhong: {ti_zhong}, sex:{sex}")
     
     if not image_url:
         return jsonify({'error': 'Missing image URL parameter'}), 400
@@ -246,7 +262,7 @@ def face_url():
         # 保存图片（保持原始格式）
         img.save(save_path, format=img.format if img.format else 'JPEG')
         data  = {}
-        fire_ret = GetPicDesc(image_url)
+        fire_ret = GetPicDesc(image_url,shen_gao, ti_zhong, sex)
         # img = Image.open(save_path)
 
         final_data = {'图片是否有人':'没人'}
