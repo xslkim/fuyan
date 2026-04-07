@@ -1,9 +1,9 @@
 import os
+from volcenginesdkarkruntime import Ark
 import json
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
-from volcenginesdkarkruntime import Ark
 import math
 
 base_options = python.BaseOptions(model_asset_path='face_landmarker_v2_with_blendshapes.task')
@@ -13,14 +13,24 @@ options = vision.FaceLandmarkerOptions(base_options=base_options,
                                        num_faces=1)
 detector = vision.FaceLandmarker.create_from_options(options)
 
+# pip install --upgrade "volcengine-python-sdk[ark]"
+
 # 请确保您已将 API Key 存储在环境变量 ARK_API_KEY 中
 # 初始化Ark客户端，从环境变量中读取您的API Key
+# client = Ark(
+#     # 此为默认路径，您可根据业务所在地域进行配置
+#     base_url="https://ark.cn-beijing.volces.com/api/v3",
+#     # 从环境变量中获取您的 API Key。此为默认方式，您可根据需要进行修改
+#     # api_key=os.environ.get("ARK_API_KEY"),
+#     api_key='14fc0280-fc65-462d-ac2d-50178c0212e3'
+# )
+
+# 从环境变量中获取您的API KEY，配置方法见：https://www.volcengine.com/docs/82379/1399008
+api_key = '14fc0280-fc65-462d-ac2d-50178c0212e3' #os.getenv('ARK_API_KEY')
+
 client = Ark(
-    # 此为默认路径，您可根据业务所在地域进行配置
-    base_url="https://ark.cn-beijing.volces.com/api/v3",
-    # 从环境变量中获取您的 API Key。此为默认方式，您可根据需要进行修改
-    # api_key=os.environ.get("ARK_API_KEY"),
-    api_key='14fc0280-fc65-462d-ac2d-50178c0212e3'
+    base_url='https://ark.cn-beijing.volces.com/api/v3',
+    api_key=api_key,
 )
 
 def parse_face_json_data(data_str):
@@ -67,26 +77,31 @@ def parse_cloth_json_data(data_str):
     # 转换为Python字典
     data = json.loads(json_str_clean)
     return data
+
+
     
 def GetClothDesc(img_url):
-    response = client.chat.completions.create(
-        model="doubao-1.5-vision-pro-250328",
-        messages=[
+    response = client.responses.create(
+        model="doubao-seed-1-6-vision-250815",
+        input=[
             {
                 "role": "user",
                 "content": [
+
                     {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": img_url
-                        },
+                        "type": "input_image",
+                        "image_url": img_url
                     },
-                    {"type": "text", "text": "告诉我图片中服装的以下特征，只要答案，格式为json字符串，颜色四季型（春季型/夏季型/秋季型/冬季型，可以多选）适合年龄范围 直得分 曲得分 直曲总分（直得分-曲得分） 大量感得分 小量感得分 量感总分（大量感得分-小量感得）立体度（就是与面部风格立体度高的人的适配程度，总分十分）适合体型（H型/​X型/A型/O型/T型，可以多选）​​适合场景（职业/商务、休闲/日常、隆重社交） 特点（显高、显瘦、显气场、 显腰线 、显腿长、显胸大、显胸小）适合穿着季节（春季/夏季/秋季/冬季，可以多选） 以及10个最能概括衣服特征的标签  "},
+                    {
+                        "type": "input_text",
+                        "text": "告诉我图片中服装的以下特征，只要答案，格式为json字符串，颜色四季型（春季型/夏季型/秋季型/冬季型，可以多选）适合年龄范围 直得分 曲得分 直曲总分（直得分-曲得分） 大量感得分 小量感得分 量感总分（大量感得分-小量感得）立体度（就是与面部风格立体度高的人的适配程度，总分十分）适合体型（H型/​X型/A型/O型/T型，可以多选）​​适合场景（职业/商务、休闲/日常、隆重社交） 特点（显高、显瘦、显气场、 显腰线 、显腿长、显胸大、显胸小）适合穿着季节（春季/夏季/秋季/冬季，可以多选） 以及10个最能概括衣服特征的标签  "
+                    },
                 ],
             }
-        ],
+        ]
     )
 
+    print(response)
     text = response.choices[0].message.content
     result = {}
 
@@ -130,7 +145,8 @@ def GetPicDesc(img_url, shen_gao = None, ti_zhong = None, sex = None):
 
     response = client.chat.completions.create(
         # 指定您创建的方舟推理接入点 ID，此处已帮您修改为您的推理接入点 ID
-        model="doubao-1.5-vision-pro-250328",
+        # model="doubao-1.5-vision-pro-250328",
+        model="doubao-seed-1-6-vision-250815",
         messages=[
             {
                 "role": "user",
